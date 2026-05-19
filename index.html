@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Latihan Soal Bahasa Bali</title>
+    <style>
+        :root {
+            --primary-color: #4a90e2;
+            --success-color: #2ecc71;
+            --error-color: #e74c3c;
+            --bg-color: #f5f7fa;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 30px;
+        }
+
+        .wacana-box {
+            background-color: #eef2f7;
+            border-left: 5px solid var(--primary-color);
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            font-style: italic;
+            white-space: pre-line;
+        }
+
+        .soal-card {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+        }
+
+        .soal-text {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .pilihan-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .opsi-btn {
+            background-color: #fff;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 12px 15px;
+            font-size: 1rem;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            outline: none;
+        }
+
+        .opsi-btn:hover:not([disabled]) {
+            background-color: #f0f4f8;
+            border-color: var(--primary-color);
+        }
+
+        /* State ketika jawaban benar */
+        .opsi-btn.benar {
+            background-color: #d4edda !important;
+            border-color: var(--success-color) !important;
+            color: #155724;
+            font-weight: bold;
+        }
+
+        /* State ketika jawaban salah */
+        .opsi-btn.salah {
+            background-color: #f8d7da !important;
+            border-color: var(--error-color) !important;
+            color: #721c24;
+        }
+
+        /* Menonaktifkan tombol setelah dipilih */
+        .opsi-btn[disabled] {
+            cursor: not-allowed;
+        }
+
+        .status-text {
+            margin-top: 10px;
+            font-weight: bold;
+            display: none;
+        }
+        
+        .status-text.benar-text {
+            color: var(--success-color);
+            display: block;
+        }
+        
+        .status-text.salah-text {
+            color: var(--error-color);
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Latihan Soal Sastra & Aksara Bali</h1>
+    <div id="quiz-box"></div>
+</div>
+
+<script>
+    // Data soal berdasarkan dokumen yang Anda berikan beserta kunci jawabannya
+    const bankSoal = [
+        {
+            id: 1,
+            wacana: "BALI\n(Olih: I Gusti Ngurah Yudha Panik)\nTabuh, solah lan wirama driki masikian idup kaidupang antuk dasar manah suci\nsuara bajra ida pedanda malarapan wéda-wéda juru kidung matimpuh ngidungang wargasari sekadi maayunan ring muncuk-muncuk pénjoré",
+            soal: "Punggelan karya sastra sané wénten ring ajeng ngranjing ring soroh...",
+            pilihan: [
+                "Gancaran Bali anyar",
+                "Gancaran Bali purwa",
+                "Tembang Bali anyar",
+                "Tembang Bali purwa",
+                "Tembang Bali Tengahan"
+            ],
+            jawabanBenar: 2 // Tembang Bali anyar (Puisi Bali Anyar)
+        },
+        {
+            id: 2,
+            wacana: "BALI\n(Olih: I Gusti Ngurah Yudha Panik)\nTabuh, solah lan wirama driki masikian idup kaidupang antuk dasar manah suci\nsuara bajra ida pedanda malarapan wéda-wéda juru kidung matimpuh ngidungang wargasari sekadi maayunan ring muncuk-muncuk pénjoré",
+            soal: "Tabuh, solah lan wirama driki masikian. Kruna 'driki' ring lengkara baduur mateges ring…",
+            pilihan: [
+                "Pura",
+                "Bali",
+                "Pakraman",
+                "Muncuk pénjoré",
+                "Panataran"
+            ],
+            jawabanBenar: 1 // Bali
+        },
+        {
+            id: 3,
+            soal: "Puisi Bali anyar kamanggehang ring warsa…",
+            pilihan: ["1959", "1945", "1949", "1960", "1979"],
+            jawabanBenar: 0 // 1959
+        },
+        {
+            id: 4,
+            soal: "Yéning selehin ring wangun kasusastraan Bali, puisi Bali anyar ngranjing ring wangun…",
+            pilihan: [
+                "Tembang Bali Anyar",
+                "Tembang Bali Purwa",
+                "Gancaran Bali Anyar",
+                "Gancaran Bali Purwa",
+                "Tembang Bali Tengahan"
+            ],
+            jawabanBenar: 0 // Tembang Bali Anyar
+        },
+        {
+            id: 5,
+            soal: "Puisi Bali anyar kawangun antuk…",
+            pilihan: [
+                "Murda, bantang, wirama, papadan suara",
+                "Murda, wiraga, pralambang suara",
+                "Bantang, murda, pawatekan pragina",
+                "Bantang, wirama, genah kahanan",
+                "Murda, pralambang, pragina"
+            ],
+            jawabanBenar: 0 // Murda, bantang, wirama, papadan suara
+        },
+        {
+            id: 6,
+            soal: "Daging piteket utawi pabesen ring puisi inggih punika…",
+            pilihan: ["Amanat", "Bantang", "Wirasa", "Murda", "Wirama"],
+            jawabanBenar: 0 // Amanat
+        },
+        {
+            id: 7,
+            soal: "Kapatutan suara ring uger-uger ngwacén puisi inggih punika…",
+            pilihan: ["Wirama", "Wiraga", "Wirasa", "Wacana", "Wiracarita"],
+            jawabanBenar: 0 // Wirama
+        },
+        {
+            id: 8,
+            soal: "Wirasa sané ngranjing ring uger-uger ngwacén puisi inggih punika…",
+            pilihan: [
+                "Ngresepang suksman miwah unteng puisi",
+                "Kapatutan suara rikala ngwacén puisi",
+                "Olah angga sarira rikala ngwacén puisi",
+                "Semita (mimik wajah) rikala ngwacén puisi",
+                "Pamunggelan lengkara rikala ngwacén puisi"
+            ],
+            jawabanBenar: 0 // Ngresepang suksman miwah unteng puisi
+        },
+        {
+            id: 9,
+            soal: "Rikala ngwacén puisi, pinih riin patut ngresepang daging miwah suksman puisi sané kawacén. Ngranjing ring uger-uger puisi kawastanin…",
+            pilihan: ["Wirasa", "Wirama", "Wiraga", "Wacana", "Wiracarita"],
+            jawabanBenar: 0 // Wirasa
+        },
+        {
+            id: 10,
+            soal: "Mangda puisi punika kapireng lengut tur ngulangunin, wénten makudang-kudang uger-ugernyané, sajabaning…",
+            pilihan: [
+                "Wirasa, wiraga",
+                "Wirama, wirasa",
+                "Wiraga, semita",
+                "Wates lengkara",
+                "Wacana, suara"
+            ],
+            jawabanBenar: 4 // Wacana, suara
+        },
+        {
+            id: 11,
+            wacana: "Sang rauh Lawate samar (Olih Gedé Darna)\nAngin karoné rauh saking kauh matalang bedbedan nistané sayan pageh ngelut kayun uduh.. pinunasé kagantung ring langité nanging pasihé aad, bulané kapangan",
+            soal: "Lengkara sané macetak tebel ring punggelan puisi di ajeng kawastanin majas... (Catatan: 'Angin karoné rauh saking kauh... ngelut kayun')",
+            pilihan: ["Hiperbola", "Litotes", "Personifikasi", "Sinisme", "Métafora"],
+            jawabanBenar: 2 // Personifikasi
+        },
+        {
+            id: 12,
+            wacana: "Panglipur Sandikala\n(Olih: I Gusti Nengah Hari Mahardika)\nLangit kuning paling angin ngeling\npasih sengir\ngumi magingsir lingsir baan jadma momo maboya-boya\nnguskus andus nusdus mayus lekig lekag\npang enggal ngelah uli éah\n….",
+            soal: "Aliterasi miwah asonansi punggelan puisi ring ajeng sami magenah ring … lengkara.",
+            pilihan: ["Ungkur", "Ajeng", "Tengah", "Ajeng miwah tengah", "Ajeng miwah ungkur"],
+            jawabanBenar: 0 // Ungkur
+        },
+        {
+            id: 13,
+            wacana: "Panéling-éling (Olih: Madé Sanggra) dumun\nsalai tahun sané langkung\ndaweg geniné murub kadi gunung agung gita merdéka utawi mati\npinaka tungtunging manah\nunteng mamanah punika pinaka geni astra",
+            soal: "Yéning selehin lengkara ring ajeng sané ngranjing majas hiperbola inggih punika…",
+            pilihan: [
+                "daweg geniné murub kadi gunung agung",
+                "gita merdéka utawi mati",
+                "salai tahun sané langkung",
+                "unteng mamanah punika pinaka geni astra",
+                "pinaka tungtunging manah"
+            ],
+            jawabanBenar: 0 // daweg geniné murub kadi gunung agung
+        },
+        {
+            id: 14,
+            wacana: "Panéling-éling (Olih: Madé Sanggra) dumun\nsalai tahun sané langkung\ndaweg geniné murub kadi gunung agung gita merdéka utawi mati\npinaka tungtunging manah\nunteng mamanah punika pinaka geni astra",
+            soal: "Yéning selehin lengkara ring ajeng sané ngranjing majas personifikasi inggih punika…",
+            pilihan: [
+                "unteng manah mamanah punika pinaka geni astra",
+                "daweg geniné murub kadi gunung agung",
+                "pinaka tungtunging manah",
+                "gita merdéka utawi mati",
+                "salai tahun sané langkung"
+            ],
+            jawabanBenar: 0 // gita merdéka utawi mati (Gita/Nyanyian merdeka digambarkan bisa mati/memilih mati)
+        },
+        {
+            id: 15,
+            soal: "Puisi sane kawacen sedih inggih punika….",
+            pilihan: ["Idupé Nemu Sengsara", "Galang Bulan", "Bali", "Ngrupuk", "Pangéling-éling"],
+            jawabanBenar: 0 // Idupé Nemu Sengsara
+        },
+        {
+            id: 16,
+            soal: "Murda puisi sané mapaiketan ring budaya inggih punika…",
+            pilihan: ["Bali", "Carik Beton", "Lawaté Samar", "Ring Pasisi Kuta", "Panglipur Sandikala"],
+            jawabanBenar: 0 // Bali
+        },
+        {
+            id: 17,
+            soal: "Kruna drama ngawit ring basa…",
+            pilihan: ["Yunani", "Sansekerta", "Jawa Kuna", "Tamil", "Belanda"],
+            jawabanBenar: 0 // Yunani
+        },
+        {
+            id: 18,
+            soal: "Drama Bali anyar miwah drama Bali purwa pada maderbé cecirén soang-soang. Ring sor sami cecirén drama Bali anyar sajabaning...",
+            pilihan: [
+                "Nganggé gamelan gong",
+                "Wénten naskah",
+                "Nyatuang urip sadina-dina",
+                "Nganggé panggung",
+                "Wénten sutradara"
+            ],
+            jawabanBenar: 0 // Nganggé gamelan gong (Ciri drama purwa/tradisional)
+        },
+        {
+            id: 19,
+            soal: "Drama bebaudan sane tetujonnyané wantah nglilacita kawastanin…",
+            pilihan: ["Komedi", "Tragedi", "Roman", "Heroik", "Religi"],
+            jawabanBenar: 0 // Komedi
+        },
+        {
+            id: 20,
+            soal: "Sané ngranjing ring ceciren drama Bali Purwa ring sor puniki, sajabaning…",
+            pilihan: [
+                "Nyatuang kauripan sadina-dina",
+                "Tan nganggé naskah",
+                "Tan nganggé sutradara",
+                "Nganggé gamelan gong",
+                "Nganggé rangki"
+            ],
+            jawabanBenar: 0 // Nyatuang kauripan sadina-dina (Ciri umum drama anyar/modern)
+        },
+        {
+            id: 21,
+            soal: "Sajeroning kasusastraan Bali, wangun drama Bali kakepah antuk ….",
+            pilihan: ["Kalih soroh", "Tigang soroh", "Limang soroh", "Petang soroh", "Nenem soroh"],
+            jawabanBenar: 0 // Kalih soroh (Drama Bali Purwa & Drama Bali Anyar)
+        },
+        {
+            id: 22,
+            soal: "Ring sor puniki sane ngranjing ring drama Bali purwa, sajabaning…",
+            pilihan: ["Drama Nang Képod", "Gambuh", "Arja", "Drama gong", "Wayang wong"],
+            jawabanBenar: 0 // Drama Nang Képod (Termasuk drama modern/anyar berlatar pedesaan)
+        },
+        {
+            id: 23,
+            wacana: "Kala ento dina Buda. Bél cihna ngranjing sekolah sampun ngawit. Sami muridé ngranjing ka kelasnyané soang-soang. Wénten adiri murid kelas XII Al telat, wastané Gedé Darsaa. Buka tumběné ia tengai bangun. 'Beh telat ba jani masuk. Buina palajaran matik maan jani, tur guruné galak. Kéngkénang koné jani?'. Baang suba déwéké opaka baan guruné', Gede Darsana ngrenggeng padidi.",
+            soal: "Yéning selehin antuk kahanan carita, punggelan drama ring ajeng magenah ring…",
+            pilihan: ["Sekolah", "Umah", "Jalan", "Dina Buda", "Tengai"],
+            jawabanBenar: 0 // Sekolah
+        },
+        {
+            id: 24,
+            wacana: "'Sa..!., sa...puniki bu, titiang telat wau ping kalih kémanten. Titiang telat bangun bu, ampurayang. Ngawit bénjang titiang nénten telat malih ', Janjin Gedé Darsanané.\n'Nah, kéwala apang saja buka janjiné! Yéning buin telat, Ibu lakar nekaang reraman Gusé ka sekolah, kénkén?', Ibu Madé Sri nyekenang matakėn.",
+            soal: "Piteket punggelan drama ring ajeng inggih punika…",
+            pilihan: [
+                "Satya semaya",
+                "Telat bangun",
+                "Nunas sinampura",
+                "Mataken",
+                "Nyekenang"
+            ],
+            jawabanBenar: 0 // Satya semaya (Menepati janji)
+        },
+        {
+            id: 25,
+            soal: "Unteng pikayunan pinaka dasar sajeroning drama sane kaunggah olih pangawi ingih punika…",
+            pilihan: ["Téma", "Piteket", "Murda", "Patitip Carita", "Lelintihan"],
+            jawabanBenar: 0 // Téma
+        },
+        {
+            id: 26,
+            soal: "Drama Bali purwa sane kasolahang nganggén pupuh kawastanin…",
+            pilihan: ["Arja", "Wayang wong", "Topéng", "Drama gong", "Sendratari"],
+            jawabanBenar: 0 // Arja
+        },
+        {
+            id: 27,
+            soal: "Drama Bali purwa inggih punika…",
+            pilihan: [
+                "Drama Bali Tradisional nyritayang indik jagaté dumun",
+                "Drama Bali sane nyritayang kauripan sadina-dina",
+                "Drama Bali nyritayang indik beburon",
+                "Drama Bali nyritayang indik murid sekolah",
+                "Drama Bali nyritayang indik jagaté mangkin"
+            ],
+            jawabanBenar: 0 // Drama Bali Tradisional nyritayang indik jagaté dumun
+        },
+        {
+            id: 28,
+            wacana: "Ni Nginté: 'Yé..., Beli Wayan ngajak Beli Ketut, kebeneng tiang kacunduk dini. Beli ajak dadua lakar kija?'.\n(Punta muwah Wijil sibarengan masaut): 'Beli lakar tangkil ring Sang Prabhu Luh. Men I Luh lakar kija?'.\nNí Nginté: 'Béh, kabenengan pesan Beli, tiang masih lakar tangkil'. Punta: 'Nah, yén kéto, jalan bareng-berang ngajak Beli tangkil Luh!'.",
+            soal: "Punggelan drama punika ngranjing ring…",
+            pilihan: [
+                "Drama Bali Purwa",
+                "Drama Bali Anyar",
+                "Drama Bali Tengahan",
+                "Drama Teater",
+                "Drama Film Pendek"
+            ],
+            jawabanBenar: 0 // Drama Bali Purwa (Karakter Punta, Wijil, Sang Prabhu adalah ciri Khas Arja/Drama Gong)
+        },
+        {
+            id: 29,
+            soal: "Murda drama Bali anyar inggih punika…",
+            pilihan: [
+                "Aduh Déwa Ratu",
+                "Cupak Grantang",
+                "Jayaprana Layonsari",
+                "Calonarang",
+                "Dalem Sidakarya"
+            ],
+            jawabanBenar: 0 // Aduh Déwa Ratu (Karya Gde Dharna, drama modern)
+        },
+        {
+            id: 30,
+            soal: "Drama sane sasolahannyané ketah nganggén dalang kawastanin…",
+            pilihan: ["Wayang wong", "Sendratari", "Arja", "Gambuh", "Prembon"],
+            jawabanBenar: 1 // Wayang wong / Wayang Kulit (di opsi adalan Wayang Wong)
+        },
+        {
+            id: 31,
+            soal: "Jadma sang sane nyobiahang pamargin carita sajeroning drama kawastanin…",
+            pilihan: ["Pragina", "Pangawi", "Sutradara", "Pawatekan", "Astrada"],
+            jawabanBenar: 0 // Pragina (Aktor/Pemain)
+        },
+        {
+            id: 32,
+            soal: "Pamargin carita sajeroning drama sane marupa paletan-paletan wicara ngawit saking pamahbah kantos pamuput inggih punika…",
+            pilihan: ["Lelintihan (Alur)", "Unteng (Téma)", "Piteket (Amanat)", "Kahanan (Latar)", "Pawatekan (Watak)"],
+            jawabanBenar: 0 // Lelintihan (Alur)
+        },
+        {
+            id: 33,
+            soal: "Pabesen pangawi sane mapikenoh sajeroning carita sané katur majeng pangwacén inggih punika…",
+            pilihan: ["Piteket", "Unteng", "Pawatekan", "Kahanan", "Lelintihan"],
+            jawabanBenar: 0 // Piteket (Amanat)
+        },
+        {
+            id: 34,
+            soal: "Sajeroning pamentasan drama Bali purwa ketah nganggen pangiring marupa…",
+            pilihan: ["Gamelan gong", "Musik", "Dubbing", "Angklung", "Lagu Pop Bali"],
+            jawabanBenar: 0 // Gamelan gong
+        },
+        {
+            id: 35,
+            soal: "Teges drama inggih punika…",
+            pilihan: [
+                "Karya sastra sane kawangun antuk bebaosan utawi dialog",
+                "Karya sastra sane kawangun antuk guru lagu",
+                "Karya sastra sane kawangun antuk carik-carik",
+                "Karya sastra sane wangunyané bebas",
+                "Karya sastra sane wangunyané tembang"
+            ],
+            jawabanBenar: 0 // Karya sastra sane kawangun antuk bebaosan utawi dialog
+        },
+        {
+            id: 36,
+            soal: "Cecirén drama Bali anyar inggih punika…",
+            pilihan: [
+                "Wénten sutradara miwah naskah",
+                "Tan wénten sutradara miwah naskah",
+                "Wénten sutradara, tan wénten naskah",
+                "Tan wénten sutradara, wénten naskah",
+                "Nganggén pangiring gamelan gong"
+            ],
+            jawabanBenar: 0 // Wénten sutradara miwah naskah
+        },
+        {
+            id: 37,
+            wacana: "Mémé : 'Luh.. Luh Sari...'\nLuh Sari : 'Wentén napi Mé?.'\nMémé : 'Mai..tulungin Mémé matanding. Galungan suba paek'\nLuh Sari : 'Yih..sajan Mé. Galungané suba paek.'\nMémé : '_____'\nLuh Sari : 'Nggih Mé.'",
+            soal: "Jangkepang dialog drama punika antuk lengkara ring sor puniki!",
+            pilihan: [
+                "Ento suba, tulungin Mémé matanding canang, anggo lakar banten",
+                "Ento suba, tulungin Mémé nyakan di paon",
+                "Ento suba, tulungin Mémé nyampat natahé",
+                "Ento suba, tulungin Mémé ngumbah piring",
+                "Ento suba, tulungin Mémé manting baju"
+            ],
+            jawabanBenar: 0 // Ento suba, tulungin Mémé matanding canang, anggo lakar banten
+        },
+        {
+            id: 38,
+            soal: "Aksara Bali sane lumrah kaanggén nyurat Basa Bali inggih punika…",
+            pilihan: ["Wréhastra", "Swalalita", "Modré", "Dantya", "Baligrafi"],
+            jawabanBenar: 0 // Wréhastra
+        },
+        {
+            id: 39,
+            soal: "Nganutin uger-uger pasang Aksara Bali, encén sesuratan Aksara Bali kruna ring sor nénten kadadosang nganggé cecek?",
+            pilihan: ["Tangkah", "Kangkung", "Sungsung", "Mongpong", "Céngcéng"],
+            jawabanBenar: 0 // Tangkah (karena di akhir kata dan didahului vokal, tapi jika dalam satu suku kata seperti kangkung boleh. Hukum cecek/adeg-adeg).
+        },
+        {
+            id: 40,
+            soal: "Ritatkala nyurat kruna miwah lengkara antuk Aksara Bali ketah nganggé panganggé suara, panganggé aksara miwah panganggé tengenan. Sané encén ngranjing panganggé tengenan ring sor puniki?",
+            pilihan: [
+                "Surang, cecek, bisah",
+                "Bisah, suku, tedong",
+                "Adeg-adeg, ulu, guung",
+                "Nania, suku kembung, guung",
+                "Ulu, taléng, tedong"
+            ],
+            jawabanBenar: 0 // Surang, cecek, bisah
+        }
+    ];
+
+    // Fungsi untuk memuat soal ke HTML
+    function loadQuiz() {
+        const quizBox = document.getElementById('quiz-box');
+        
+        bankSoal.forEach((item, index) => {
+            const soalCard = document.createElement('div');
+            soalCard.className = 'soal-card';
+            
+            // Jika ada wacana/teks pendukung
+            let wacanaHtml = '';
+            if (item.wacana) {
+                wacanaHtml = `<div class="wacana-box">${item.wacana}</div>`;
+            }
+
+            // Membuat list pilihan jawaban
+            let pilihanHtml = '';
+            item.pilihan.forEach((opsi, opsiIdx) => {
+                pilihanHtml += `
+                    <button class="opsi-btn" 
+                            onclick="periksaJawaban(this, ${index}, ${opsiIdx})">
+                        ${String.fromCharCode(65 + opsiIdx)}. ${opsi}
+                    </button>
+                `;
+            });
+
+            soalCard.innerHTML = `
+                ${wacanaHtml}
+                <div class="soal-text">${index + 1}. ${item.soal}</div>
+                <div class="pilihan-container" id="pilihan-box-${index}">
+                    ${pilihanHtml}
+                </div>
+                <div class="status-text" id="status-${index}"></div>
+            `;
+            
+            quizBox.appendChild(soalCard);
+        });
+    }
+
+    // Fungsi otomatis ketika salah satu opsi dipencet
+    function periksaJawaban(btnTerpilih, soalIdx, opsiIdx) {
+        const infoSoal = bankSoal[soalIdx];
+        const containerPilihan = document.getElementById(`pilihan-box-${soalIdx}`);
+        const semuaTombol = containerPilihan.getElementsByClassName('opsi-btn');
+        const statusText = document.getElementById(`status-${soalIdx}`);
+        
+        // Kunci semua tombol pada soal ini agar tidak bisa ditekan lagi setelah memilih
+        for (let i = 0; i < semuaTombol.length; i++) {
+            semuaTombol[i].disabled = true;
+            // Tampilkan mana jawaban yang benar aslinya jika user salah memilih
+            if (i === infoSoal.jawabanBenar) {
+                semuaTombol[i].classList.add('benar');
+            }
+        }
+
+        // Jalankan pengecekan jawaban seketika
+        if (opsiIdx === infoSoal.jawabanBenar) {
+            btnTerpilih.classList.add('benar');
+            statusText.innerText = "Benar! ✨";
+            statusText.className = "status-text benar-text";
+        } else {
+            btnTerpilih.classList.add('salah');
+            statusText.innerText = `Salah! Jawaban yang benar adalah yang berwarna hijau.`;
+            statusText.className = "status-text salah-text";
+        }
+    }
+
+    // Jalankan aplikasi saat halaman pertama kali dibuka
+    window.onload = loadQuiz;
+</script>
+
+</body>
+</html>
